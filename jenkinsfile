@@ -1,32 +1,23 @@
 pipeline {
     agent any
-
+ 
     stages {
-      stage('fetch_latest_code') {
-        steps {
-          git url: 'https://github.com/djapif10/terraform-jenkins-ec2'
+        stage('checkout') {
+            steps {
+                checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/re/repo_name']]])
+            }
         }
-      }
-
-      stage('TF Init&Plan') {
-        steps {
-          sh 'terraform init'
-          sh 'terraform plan'
-        }      
-      }
-
-      stage('Approval') {
-        steps {
-          script {
-            def userInput = input(id: 'confirm', message: 'Apply Terraform?', parameters: [ [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Apply terraform', name: 'confirm'] ])
-          }
+        stage('init') {
+            steps {
+                sh ('terraform init') 
+            }
         }
-      }
-
-      stage('TF Apply') {
-        steps {
-          sh 'terraform apply -input=false'
+        stage('terraform  action') {
+            steps {
+                echo "Terraform action is --> ${action}"
+                sh ('terraform ${action} --auto-approve')
+            }
         }
-      }
-    } 
-  }
+    }
+    
+}
